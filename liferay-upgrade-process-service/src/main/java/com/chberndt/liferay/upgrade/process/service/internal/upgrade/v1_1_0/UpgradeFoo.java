@@ -11,7 +11,10 @@ public class UpgradeFoo extends UpgradeProcess {
 
 	@Override
 	protected void doUpgrade() throws Exception {
-		alter(Foo.class, new AlterTableAddColumn("field6 VARCHAR(255)"));
+		
+		// alter(Foo.class, new AlterTableAddColumn("FOO_FOO field6 VARCHAR(255)"));
+		
+		runSQL(connection, "ALTER TABLE FOO_FOO ADD COLUMN field6 VARCHAR(255)");
 	}
 
 }

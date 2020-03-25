@@ -80,7 +80,7 @@ public class FooModelImpl extends BaseModelImpl<Foo> implements FooModel {
 		{"createDate", Types.TIMESTAMP}, {"modifiedDate", Types.TIMESTAMP},
 		{"field1", Types.VARCHAR}, {"field2", Types.BOOLEAN},
 		{"field3", Types.INTEGER}, {"field4", Types.TIMESTAMP},
-		{"field5", Types.VARCHAR}
+		{"field5", Types.VARCHAR}, {"field6", Types.VARCHAR}
 	};
 
 	public static final Map<String, Integer> TABLE_COLUMNS_MAP =
@@ -100,10 +100,11 @@ public class FooModelImpl extends BaseModelImpl<Foo> implements FooModel {
 		TABLE_COLUMNS_MAP.put("field3", Types.INTEGER);
 		TABLE_COLUMNS_MAP.put("field4", Types.TIMESTAMP);
 		TABLE_COLUMNS_MAP.put("field5", Types.VARCHAR);
+		TABLE_COLUMNS_MAP.put("field6", Types.VARCHAR);
 	}
 
 	public static final String TABLE_SQL_CREATE =
-		"create table FOO_Foo (uuid_ VARCHAR(75) null,fooId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,field1 VARCHAR(75) null,field2 BOOLEAN,field3 INTEGER,field4 DATE null,field5 VARCHAR(75) null)";
+		"create table FOO_Foo (uuid_ VARCHAR(75) null,fooId LONG not null primary key,groupId LONG,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,field1 VARCHAR(75) null,field2 BOOLEAN,field3 INTEGER,field4 DATE null,field5 VARCHAR(75) null,field6 VARCHAR(75) null)";
 
 	public static final String TABLE_SQL_DROP = "drop table FOO_Foo";
 
@@ -161,6 +162,7 @@ public class FooModelImpl extends BaseModelImpl<Foo> implements FooModel {
 		model.setField3(soapModel.getField3());
 		model.setField4(soapModel.getField4());
 		model.setField5(soapModel.getField5());
+		model.setField6(soapModel.getField6());
 
 		return model;
 	}
@@ -345,6 +347,9 @@ public class FooModelImpl extends BaseModelImpl<Foo> implements FooModel {
 		attributeGetterFunctions.put("field5", Foo::getField5);
 		attributeSetterBiConsumers.put(
 			"field5", (BiConsumer<Foo, String>)Foo::setField5);
+		attributeGetterFunctions.put("field6", Foo::getField6);
+		attributeSetterBiConsumers.put(
+			"field6", (BiConsumer<Foo, String>)Foo::setField6);
 
 		_attributeGetterFunctions = Collections.unmodifiableMap(
 			attributeGetterFunctions);
@@ -591,6 +596,22 @@ public class FooModelImpl extends BaseModelImpl<Foo> implements FooModel {
 		_field5 = field5;
 	}
 
+	@JSON
+	@Override
+	public String getField6() {
+		if (_field6 == null) {
+			return "";
+		}
+		else {
+			return _field6;
+		}
+	}
+
+	@Override
+	public void setField6(String field6) {
+		_field6 = field6;
+	}
+
 	@Override
 	public StagedModelType getStagedModelType() {
 		return new StagedModelType(
@@ -645,6 +666,7 @@ public class FooModelImpl extends BaseModelImpl<Foo> implements FooModel {
 		fooImpl.setField3(getField3());
 		fooImpl.setField4(getField4());
 		fooImpl.setField5(getField5());
+		fooImpl.setField6(getField6());
 
 		fooImpl.resetOriginalValues();
 
@@ -799,6 +821,14 @@ public class FooModelImpl extends BaseModelImpl<Foo> implements FooModel {
 			fooCacheModel.field5 = null;
 		}
 
+		fooCacheModel.field6 = getField6();
+
+		String field6 = fooCacheModel.field6;
+
+		if ((field6 != null) && (field6.length() == 0)) {
+			fooCacheModel.field6 = null;
+		}
+
 		return fooCacheModel;
 	}
 
@@ -894,6 +924,7 @@ public class FooModelImpl extends BaseModelImpl<Foo> implements FooModel {
 	private int _field3;
 	private Date _field4;
 	private String _field5;
+	private String _field6;
 	private long _columnBitmask;
 	private Foo _escapedModel;
 

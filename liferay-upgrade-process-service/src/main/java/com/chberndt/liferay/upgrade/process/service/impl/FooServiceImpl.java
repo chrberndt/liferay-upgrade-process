@@ -41,9 +41,10 @@ import org.osgi.service.component.annotations.Component;
 )
 public class FooServiceImpl extends FooServiceBaseImpl {
 
-	/*
+	/**
 	 * NOTE FOR DEVELOPERS:
 	 *
 	 * Never reference this class directly. Always use <code>com.chberndt.liferay.upgrade.process.service.FooServiceUtil</code> to access the foo remote service.
 	 */
+
 }

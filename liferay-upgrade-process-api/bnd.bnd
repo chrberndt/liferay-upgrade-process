@@ -1,6 +1,6 @@
 Bundle-Name: liferay-upgrade-process-api
 Bundle-SymbolicName: com.chberndt.liferay.upgrade.process.api
-Bundle-Version: 1.0.0
+Bundle-Version: 1.1.0
 Export-Package:\
 	com.chberndt.liferay.upgrade.process.exception,\
 	com.chberndt.liferay.upgrade.process.model,\

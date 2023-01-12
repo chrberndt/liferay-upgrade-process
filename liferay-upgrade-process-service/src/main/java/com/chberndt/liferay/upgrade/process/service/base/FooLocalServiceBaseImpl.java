@@ -16,6 +16,7 @@ package com.chberndt.liferay.upgrade.process.service.base;
 
 import com.chberndt.liferay.upgrade.process.model.Foo;
 import com.chberndt.liferay.upgrade.process.service.FooLocalService;
+import com.chberndt.liferay.upgrade.process.service.FooLocalServiceUtil;
 import com.chberndt.liferay.upgrade.process.service.persistence.FooPersistence;
 
 import com.liferay.exportimport.kernel.lar.ExportImportHelperUtil;
@@ -37,22 +38,28 @@ import com.liferay.portal.kernel.dao.orm.IndexableActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Projection;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.PersistedModel;
 import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiService;
 import com.liferay.portal.kernel.search.Indexable;
 import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
 import com.liferay.portal.kernel.service.PersistedModelLocalService;
+import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.io.Serializable;
 
+import java.lang.reflect.Field;
+
 import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 
 /**
@@ -73,11 +80,15 @@ public abstract class FooLocalServiceBaseImpl
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. Use <code>FooLocalService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.chberndt.liferay.upgrade.process.service.FooLocalServiceUtil</code>.
+	 * Never modify or reference this class directly. Use <code>FooLocalService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>FooLocalServiceUtil</code>.
 	 */
 
 	/**
 	 * Adds the foo to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect FooLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param foo the foo
 	 * @return the foo that was added
@@ -105,6 +116,10 @@ public abstract class FooLocalServiceBaseImpl
 	/**
 	 * Deletes the foo with the primary key from the database. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect FooLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param fooId the primary key of the foo
 	 * @return the foo that was removed
 	 * @throws PortalException if a foo with the primary key could not be found
@@ -117,6 +132,10 @@ public abstract class FooLocalServiceBaseImpl
 
 	/**
 	 * Deletes the foo from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect FooLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param foo the foo
 	 * @return the foo that was removed
@@ -348,11 +367,24 @@ public abstract class FooLocalServiceBaseImpl
 	/**
 	 * @throws PortalException
 	 */
+	public PersistedModel createPersistedModel(Serializable primaryKeyObj)
+		throws PortalException {
+
+		return fooPersistence.create(((Long)primaryKeyObj).longValue());
+	}
+
+	/**
+	 * @throws PortalException
+	 */
 	@Override
 	public PersistedModel deletePersistedModel(PersistedModel persistedModel)
 		throws PortalException {
 
 		return fooLocalService.deleteFoo((Foo)persistedModel);
+	}
+
+	public BasePersistence<Foo> getBasePersistence() {
+		return fooPersistence;
 	}
 
 	/**
@@ -440,6 +472,10 @@ public abstract class FooLocalServiceBaseImpl
 	/**
 	 * Updates the foo in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect FooLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param foo the foo
 	 * @return the foo that was updated
 	 */
@@ -447,6 +483,11 @@ public abstract class FooLocalServiceBaseImpl
 	@Override
 	public Foo updateFoo(Foo foo) {
 		return fooPersistence.update(foo);
+	}
+
+	@Deactivate
+	protected void deactivate() {
+		_setLocalServiceUtilService(null);
 	}
 
 	@Override
@@ -460,6 +501,8 @@ public abstract class FooLocalServiceBaseImpl
 	@Override
 	public void setAopProxy(Object aopProxy) {
 		fooLocalService = (FooLocalService)aopProxy;
+
+		_setLocalServiceUtilService(fooLocalService);
 	}
 
 	/**
@@ -504,6 +547,20 @@ public abstract class FooLocalServiceBaseImpl
 		}
 	}
 
+	private void _setLocalServiceUtilService(FooLocalService fooLocalService) {
+		try {
+			Field field = FooLocalServiceUtil.class.getDeclaredField(
+				"_service");
+
+			field.setAccessible(true);
+
+			field.set(null, fooLocalService);
+		}
+		catch (ReflectiveOperationException reflectiveOperationException) {
+			throw new RuntimeException(reflectiveOperationException);
+		}
+	}
+
 	protected FooLocalService fooLocalService;
 
 	@Reference
@@ -532,5 +589,8 @@ public abstract class FooLocalServiceBaseImpl
 	@Reference
 	protected com.liferay.asset.kernel.service.AssetTagLocalService
 		assetTagLocalService;
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		FooLocalServiceBaseImpl.class);
 
 }

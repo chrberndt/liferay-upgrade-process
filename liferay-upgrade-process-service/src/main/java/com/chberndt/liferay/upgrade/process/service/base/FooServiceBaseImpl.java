@@ -16,6 +16,7 @@ package com.chberndt.liferay.upgrade.process.service.base;
 
 import com.chberndt.liferay.upgrade.process.model.Foo;
 import com.chberndt.liferay.upgrade.process.service.FooService;
+import com.chberndt.liferay.upgrade.process.service.FooServiceUtil;
 import com.chberndt.liferay.upgrade.process.service.persistence.FooPersistence;
 
 import com.liferay.portal.aop.AopService;
@@ -24,12 +25,17 @@ import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdate;
 import com.liferay.portal.kernel.dao.jdbc.SqlUpdateFactoryUtil;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.module.framework.service.IdentifiableOSGiService;
 import com.liferay.portal.kernel.service.BaseServiceImpl;
 import com.liferay.portal.kernel.util.PortalUtil;
 
+import java.lang.reflect.Field;
+
 import javax.sql.DataSource;
 
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 
 /**
@@ -50,8 +56,13 @@ public abstract class FooServiceBaseImpl
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. Use <code>FooService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>com.chberndt.liferay.upgrade.process.service.FooServiceUtil</code>.
+	 * Never modify or reference this class directly. Use <code>FooService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>FooServiceUtil</code>.
 	 */
+	@Deactivate
+	protected void deactivate() {
+		_setServiceUtilService(null);
+	}
+
 	@Override
 	public Class<?>[] getAopInterfaces() {
 		return new Class<?>[] {FooService.class, IdentifiableOSGiService.class};
@@ -60,6 +71,8 @@ public abstract class FooServiceBaseImpl
 	@Override
 	public void setAopProxy(Object aopProxy) {
 		fooService = (FooService)aopProxy;
+
+		_setServiceUtilService(fooService);
 	}
 
 	/**
@@ -101,6 +114,19 @@ public abstract class FooServiceBaseImpl
 		}
 		catch (Exception exception) {
 			throw new SystemException(exception);
+		}
+	}
+
+	private void _setServiceUtilService(FooService fooService) {
+		try {
+			Field field = FooServiceUtil.class.getDeclaredField("_service");
+
+			field.setAccessible(true);
+
+			field.set(null, fooService);
+		}
+		catch (ReflectiveOperationException reflectiveOperationException) {
+			throw new RuntimeException(reflectiveOperationException);
 		}
 	}
 
@@ -150,5 +176,8 @@ public abstract class FooServiceBaseImpl
 
 	@Reference
 	protected com.liferay.asset.kernel.service.AssetTagService assetTagService;
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		FooServiceBaseImpl.class);
 
 }
